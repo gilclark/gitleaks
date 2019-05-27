@@ -17,11 +17,13 @@ import (
 // Options for gitleaks
 type Options struct {
 	// remote target options
-	Repo       string `short:"r" long:"repo" description:"Repo url to audit"`
-	GithubUser string `long:"github-user" description:"Github user to audit"`
-	GithubOrg  string `long:"github-org" description:"Github organization to audit"`
-	GithubURL  string `long:"github-url" default:"https://api.github.com/" description:"GitHub API Base URL, use for GitHub Enterprise. Example: https://github.example.com/api/v3/"`
-	GithubPR   string `long:"github-pr" description:"Github PR url to audit. This does not clone the repo. GITHUB_TOKEN must be set"`
+	Repo             string `short:"r" long:"repo" description:"Repo url to audit"`
+	GithubUser       string `long:"github-user" description:"Github user to audit"`
+	GithubOrg        string `long:"github-org" description:"Github organization to audit"`
+	GithubURL        string `long:"github-url" default:"https://api.github.com/" description:"GitHub API Base URL, use for GitHub Enterprise. Example: https://github.example.com/api/v3/"`
+	GithubPR         string `long:"github-pr" description:"Github PR url to audit. This does not clone the repo. GITHUB_TOKEN must be set"`
+	BitbucketURL     string `long:"bitbucketurl" description:"Bitbucket URL"`
+	BitbucketProject string `long:"bitbucketproject" description:"Bitbucket Project to audit"`
 
 	GitLabUser string `long:"gitlab-user" description:"GitLab user ID to audit"`
 	GitLabOrg  string `long:"gitlab-org" description:"GitLab group ID to audit"`
@@ -35,13 +37,15 @@ type Options struct {
 	OwnerPath string `long:"owner-path" description:"Path to owner directory (repos discovered)"`
 
 	// Process options
-	Threads      int    `long:"threads" description:"Maximum number of threads gitleaks spawns"`
-	Disk         bool   `long:"disk" description:"Clones repo(s) to disk"`
-	ConfigPath   string `long:"config" description:"path to gitleaks config"`
-	SSHKey       string `long:"ssh-key" description:"path to ssh key"`
-	ExcludeForks bool   `long:"exclude-forks" description:"exclude forks for organization/user audits"`
-	RepoConfig   bool   `long:"repo-config" description:"Load config from target repo. Config file must be \".gitleaks.toml\""`
-	Branch       string `long:"branch" description:"Branch to audit"`
+	Threads           int    `long:"threads" description:"Maximum number of threads gitleaks spawns"`
+	Disk              bool   `long:"disk" description:"Clones repo(s) to disk"`
+	ConfigPath        string `long:"config" description:"path to gitleaks config"`
+	SSHKey            string `long:"ssh-key" description:"path to ssh key"`
+	BasicAuthUsername string `long:"username" description:"http basic auth user"`
+	BasicAuthPassword string `long:"password" description:"http basic auth password"`
+	ExcludeForks      bool   `long:"exclude-forks" description:"exclude forks for organization/user audits"`
+	RepoConfig        bool   `long:"repo-config" description:"Load config from target repo. Config file must be \".gitleaks.toml\""`
+	Branch            string `long:"branch" description:"Branch to audit"`
 	// TODO: IncludeMessages  string `long:"messages" description:"include commit messages in audit"`
 
 	// Output options
@@ -97,6 +101,8 @@ func (opts *Options) guard() error {
 		return fmt.Errorf("github organization set and local owner path")
 	} else if opts.GithubUser != "" && opts.OwnerPath != "" {
 		return fmt.Errorf("github user set and local owner path")
+	} else if opts.BitbucketProject != "" && opts.BitbucketURL == "" {
+		return fmt.Errorf("bitbucket url must be set to audit bitbucket project")
 	}
 
 	if opts.Threads > runtime.GOMAXPROCS(0) {

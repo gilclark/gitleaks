@@ -9,7 +9,9 @@ import (
 	"strings"
 
 	"github.com/BurntSushi/toml"
+	"github.com/mattn/go-tty"
 	log "github.com/sirupsen/logrus"
+	"gopkg.in/src-d/go-git.v4/plumbing/transport/http"
 	"gopkg.in/src-d/go-git.v4/plumbing/transport/ssh"
 )
 
@@ -59,6 +61,7 @@ type Config struct {
 	}
 	FileRules []*Rule
 	sshAuth   *ssh.PublicKeys
+	basicAuth *http.BasicAuth
 }
 
 // loadToml loads of the toml config containing regexes and whitelists.
@@ -99,6 +102,12 @@ func newConfig() (*Config, error) {
 		return nil, err
 	}
 	config.sshAuth = sshAuth
+
+	basicAuth, err := getBasicAuth()
+	if err != nil {
+		return nil, err
+	}
+	config.basicAuth = basicAuth
 
 	err = config.update(tomlConfig)
 	if err != nil {
@@ -233,4 +242,45 @@ func getSSHAuth() (*ssh.PublicKeys, error) {
 		}
 	}
 	return sshAuth, nil
+}
+
+// getBasicAuth return a basic http auth use by go-git to clone repos behind authentication.
+// If --username is set it will use that as the basic http auth username.
+// If --password is set it will use that as the basic auth password.  If not, it will
+// prompt for a password.
+func getBasicAuth() (*http.BasicAuth, error) {
+	if strings.HasPrefix(opts.Repo, "git") {
+		// if you are attempting to clone a git repo via ssh and supply basic auth,
+		// the clone will fail.
+		return nil, fmt.Errorf("you cannot clone via ssh using basic http authentication")
+	}
+
+	var (
+		username string
+		password string
+	)
+	if opts.BasicAuthUsername != "" {
+		username = strings.TrimSpace(opts.BasicAuthUsername)
+
+		if opts.BasicAuthPassword != "" {
+			password = strings.TrimSpace(opts.BasicAuthPassword)
+		} else {
+			// prompt for password
+			t, err := tty.Open()
+			if err != nil {
+				return nil, fmt.Errorf("must run in a terminal to prompt for password")
+			}
+			defer t.Close()
+			fmt.Fprint(os.Stdout, "Enter your password: ")
+			password, err = t.ReadPassword()
+			if err != nil {
+				return nil, fmt.Errorf("could not get password: %v", err)
+			}
+		}
+	}
+	basicAuth := http.BasicAuth{
+		Username: username,
+		Password: password,
+	}
+	return &basicAuth, nil
 }

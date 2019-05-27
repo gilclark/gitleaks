@@ -38,8 +38,10 @@ type Report struct {
 // Run is the entry point for gitleaks
 func Run(optsL *Options) (*Report, error) {
 	var (
-		leaks []Leak
-		err   error
+		leaks    []Leak
+		repoInfo *RepoInfo
+		repoDs   []*RepoInfo
+		err      error
 	)
 
 	now := time.Now()
@@ -60,7 +62,7 @@ func Run(optsL *Options) (*Report, error) {
 
 	// start audits
 	if opts.Repo != "" || opts.RepoPath != "" {
-		repoInfo, err := newRepoInfo()
+		repoInfo, err = newRepoInfo()
 		if err != nil {
 			goto postAudit
 		}
@@ -70,11 +72,11 @@ func Run(optsL *Options) (*Report, error) {
 		}
 		leaks, err = repoInfo.audit()
 	} else if opts.OwnerPath != "" {
-		repoDs, err := discoverRepos(opts.OwnerPath)
+		repoDs, err = discoverRepos(opts.OwnerPath)
 		if err != nil {
 			goto postAudit
 		}
-		for _, repoInfo := range repoDs {
+		for _, repoInfo = range repoDs {
 			err = repoInfo.clone()
 			if err != nil {
 				continue
@@ -92,6 +94,8 @@ func Run(optsL *Options) (*Report, error) {
 		leaks, err = auditGitlabRepos()
 	} else if opts.GithubPR != "" {
 		leaks, err = auditGithubPR()
+	} else if opts.BitbucketProject != "" {
+		leaks, err = auditBitbucketProject()
 	}
 
 postAudit:

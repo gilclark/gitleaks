@@ -9,6 +9,7 @@ require (
 	github.com/hako/durafmt v0.0.0-20180520121703-7b7ae1e72ead
 	github.com/ipfs/go-ipfs v0.4.19 // indirect
 	github.com/jessevdk/go-flags v1.4.0
+	github.com/mattn/go-tty v0.0.0-20190424173100-523744f04859
 	github.com/onsi/ginkgo v1.8.0 // indirect
 	github.com/onsi/gomega v1.5.0 // indirect
 	github.com/sirupsen/logrus v1.0.6

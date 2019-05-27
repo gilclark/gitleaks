@@ -75,6 +75,13 @@ func (repoInfo *RepoInfo) clone() error {
 				Progress: os.Stdout,
 				Auth:     config.sshAuth,
 			})
+		} else if opts.BasicAuthUsername != "" {
+			// uses basic auth
+			repo, err = git.PlainClone(cloneTarget, false, &git.CloneOptions{
+				URL:      opts.Repo,
+				Progress: os.Stdout,
+				Auth:     config.basicAuth,
+			})
 		} else {
 			// public
 			repo, err = git.PlainClone(cloneTarget, false, &git.CloneOptions{
@@ -96,6 +103,12 @@ func (repoInfo *RepoInfo) clone() error {
 				URL:      opts.Repo,
 				Progress: os.Stdout,
 				Auth:     config.sshAuth,
+			})
+		} else if opts.BasicAuthUsername != "" {
+			repo, err = git.Clone(memory.NewStorage(), nil, &git.CloneOptions{
+				URL:      opts.Repo,
+				Progress: os.Stdout,
+				Auth:     config.basicAuth,
 			})
 		} else {
 			repo, err = git.Clone(memory.NewStorage(), nil, &git.CloneOptions{
