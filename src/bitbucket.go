@@ -7,7 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 
-	bitbucketv1 "github.com/gfleury/go-bitbucket-v1"
+	bitbucketv1 "github.com/gilclark/go-bitbucket-v1"
 	log "github.com/sirupsen/logrus"
 	git "gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/storage/memory"

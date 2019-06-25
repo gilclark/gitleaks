@@ -3,8 +3,8 @@ package main
 import (
 	"os"
 
+	gitleaks "github.com/gilclark/gitleaks/src"
 	log "github.com/sirupsen/logrus"
-	"github.com/zricethezav/gitleaks/src"
 )
 
 func main() {
